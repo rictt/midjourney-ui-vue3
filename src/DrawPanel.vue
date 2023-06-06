@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
-import { Message } from './interfaces/message'
+import { Message, MessageStatus } from './interfaces/message'
 import MessageItem from './Message.vue'
-import { getMessagesCache, setMessagesCache } from './utils/storage'
 import * as uuid from 'uuid'
-import { ImagineAPI, UpscaleAPI } from './api/midjourney'
+import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
 
 const contentWrap = ref<HTMLDivElement>()
 const data = reactive<{
@@ -12,7 +11,7 @@ const data = reactive<{
   prompt: string
 }>({
   prompt: '',
-  messages: getMessagesCache() as Message[]
+  messages: []
 })
 
 const onClickSend = () => {
@@ -25,100 +24,52 @@ const onKeyDown = (event: Event) => {
   sendPrompt()
 }
 
-const sendPrompt = () => {
+const getList = () => {
+  getMessagesAPI().then((resData) => {
+    data.messages = resData as any;
+    scrollToBottom()
+  })
+}
+
+const sendPrompt = async () => {
   data.prompt = data.prompt.trim()
   if (!data.prompt) return
+  const msgId = await createMessageAPI(data.prompt) as any;
+  console.log("msgId: ", msgId)
   const msgObj: Message = {
     prompt: data.prompt,
     createTime: Date.now(),
     uri: "",
-    uuid: uuid.v1()
+    id: msgId
   }
-  console.log(msgObj.uuid);
-
+  
   data.messages.push(msgObj)
   data.prompt = ''
-  createImagine(msgObj)
   scrollToBottom()
-  setMessagesCache(data.messages)
-
 }
 
-const findOneAndUpdate = (uuid: string, msg: Partial<Message>) => {
-  if (!uuid) {
-    return
-  }
-  const index = data.messages.findIndex(item => item.uuid === uuid)
-  if (index === -1) {
-    return
-  }
-  const target: Message = data.messages[index]
-  Object.keys(msg).forEach((key: string) => {
-    const value = msg[key as keyof Message]
-    target[key] = value
-  })
-}
-
-const createImagine = (msg: Message) => {
-  const { uuid } = msg
-  if (!uuid) return
-  ImagineAPI(JSON.stringify({ prompt: msg.prompt }), (resData) => {
-    findOneAndUpdate(uuid, {
-      ...resData,
-      msgId: resData.id,
-      msgHash: resData.hash
-    })
-    if (resData && resData.progress === 'done') {
-      findOneAndUpdate(uuid, {
-        done: true,
-        msgId: resData.id,
-        msgHash: resData.hash
-      })
-    }
-  })
-  setMessagesCache(data.messages)
-}
-
-const onUpscale = (msg: Message) => {
+const onUpscale = async (msg: Message) => {
   const { index, msgId, msgHash, prompt } = msg
   console.log('upscale: ', msg)
   if (!msgHash || !msgId || !index || !prompt) {
-    return
+    return console.log('upscale消息体不完整')
   }
-
-  const id = uuid.v1()
-  const newMsg: Message = {
-    uuid: id,
+ 
+  const newId = await upscaleMessageAPI({
     prompt,
     index,
-    createTime: Date.now(),
-    generateText: `生成第 ${index} 张图片（Upscale）`,
-  }
-
-  data.messages.push(newMsg)
-  setMessagesCache(data.messages)
-  scrollToBottom()
-
-  UpscaleAPI({
-    index,
     msgHash,
-    msgId,
-    prompt
-  }, (resData) => {
-    findOneAndUpdate(id, {
-      ...resData,
-      msgId: resData.id,
-      msgHash: resData.hash
-    })
-    if (resData && resData.progress === 'done') {
-      findOneAndUpdate(id, {
-        done: true,
-        msgId: resData.id,
-        msgHash: resData.hash
-      })
-    }
-    setMessagesCache(data.messages)
-  })
+    msgId
+  }) as any;
+  console.log("newId: ", newId);
+  const newMsg: Message = {
+    id: newId,
+    prompt: data.prompt,
+    index,
+    status: MessageStatus.START,
+  }
+  data.messages.push(newMsg)
+  scrollToBottom()
 }
 
 const scrollToBottom = () => {
@@ -131,19 +82,20 @@ const scrollToBottom = () => {
 
 onMounted(() => {
   scrollToBottom()
+  getList()
 })
 
 </script>
 
 <template>
-  <div class="h-full py-4">
-    <div class="relative h-full max-w-[980px] m-auto bg-gray-600 text-white px-10 py-4 rounded-xl">
+  <div class="h-full py-4 max-sm:py-0">
+    <div class="relative h-full max-w-[980px] m-auto bg-gray-600 text-white px-10 py-4 rounded-lg sm:py-0 max-sm:py-2 max-sm:px-4">
       <div id="contentWrap" ref="contentWrap" class="h-full pb-[120px] overflow-auto m-auto">
         <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="index">
           <MessageItem :message="item" @on-upscale="onUpscale" />
         </div>
       </div>
-      <div class="absolute left-10 right-10 bottom-6 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
+      <div class="absolute left-10 right-10 max-sm:left-2 max-sm:right-2 bottom-4 max-sm:bottom-2 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
         <!-- 快捷/帮助区域 -->
         <div class="flex w-full pb-1 text-sm">
           <p class="underline text-orange-400 pr-1 cursor-pointer">垫图</p>

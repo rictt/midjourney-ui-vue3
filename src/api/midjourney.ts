@@ -1,5 +1,27 @@
-const host = "http://43.153.50.34:8999"
-// const host = "http://localhost:8999"
+import { $http, host } from '../utils/axios'
+interface IUpscaleAPI {
+  prompt: string
+  msgHash: string
+  msgId: string
+  index: number
+}
+
+export const getMessagesAPI = (params?: any) => {
+  return $http.get('/list', {
+    params
+  })
+}
+
+export const createMessageAPI = (prompt: string) => {
+  return $http.post('/imagine', {
+    prompt
+  })
+}
+
+export const upscaleMessageAPI = (body: IUpscaleAPI) => {
+  return $http.post('/upscale', body)
+}
+
 
 const decoder = () => {
   const encoder = new TextEncoder();
@@ -68,45 +90,11 @@ const streamFetch = async (url: string, body: string, loadingHandler?: LoadingHa
   }
 }
 
-export const ImagineAPI = (body: string, loadingHandler: LoadingHandle) => {
-  return streamFetch("/api/imagine", body, loadingHandler)
+export const ImagineAPI = (body) => {
+  return streamFetch("/api/imagine", body)
 }
 
 
-interface IUpscaleAPI {
-  prompt: string
-  msgHash: string
-  msgId: string
-  index: number
-}
 export const UpscaleAPI = (body: IUpscaleAPI, loadingHandler?: LoadingHandle) => {
-// export const UpscaleAPI = (body: string, loadingHandler: LoadingHandle) => {
   return streamFetch("/api/upscale", JSON.stringify(body), loadingHandler)
-}
-
-export const createImagineTask = () => {
-  ImagineAPI(JSON.stringify({ prompt: "a cute girl" }), (data) => {
-    console.log("data: ", data)
-    if (data && data.uri) {
-    }
-    if (data && data.progress === 'done') {
-      console.log('绘画完成')
-    }
-  })
-}
-
-export const createUpscaleTask = () => {
-  // UpscaleAPI(JSON.stringify({
-  //   prompt: "a cute girl",
-  //   msgHash: "7369e1c1-fc43-40b3-bc84-b4a216a3c83a",
-  //   msgId: "1113817853808885831",
-  //   index: 1
-  // }), (data) => {
-  //   console.log("data: ", data)
-  //   if (data && data.uri) {
-  //   }
-  //   if (data && data.progress === 'done') {
-  //     console.log('upscale完成')
-  //   }
-  // })
 }
