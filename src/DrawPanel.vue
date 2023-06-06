@@ -63,7 +63,7 @@ const getList = (params: any) => {
   if (data.loading || data.loaded) return
   getMessagesAPI(params).then((resData) => {
     // data.messages = resData as any;
-    resData = resData || [] as any
+    ((resData || [] as any) as []).reverse();
     data.messages = [...resData as any, ...data.messages];
     data.loaded = !resData || !(resData as any).length
     scrollToBottom()
