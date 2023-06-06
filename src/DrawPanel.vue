@@ -2,17 +2,52 @@
 import { reactive, ref, onMounted } from 'vue';
 import { Message, MessageStatus } from './interfaces/message'
 import MessageItem from './Message.vue'
-import * as uuid from 'uuid'
 import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
+import { sendMessage, createWebsocket } from './utils/websocket'
 
+const ws = createWebsocket({
+  onMessage(data) {
+    // console.log('message event: ', event)
+    console.log('message event: ', data)
+  },
+  onOnLine(data) {
+    console.log('online data: ', data)
+  },
+  onTaskUpdate(data: Message) {
+    console.log('taskupdate data: ', data)
+    const { id } = data
+    findOneAndUpdate(id, data)
+    setTimeout(() => {
+      scrollToBottom()
+    }, 32)
+  }
+})
 const contentWrap = ref<HTMLDivElement>()
 const data = reactive<{
   messages: Message[],
-  prompt: string
+  prompt: string,
+  pageNum: number,
+  pageSize: number,
+  loading: boolean,
+  loaded: boolean
 }>({
   prompt: '',
-  messages: []
+  messages: [],
+  pageNum: 1,
+  pageSize: 5,
+  loading: false,
+  loaded: false
 })
+
+const findOneAndUpdate = (id: number, msgData: Partial<Message>) => {
+  const index = data.messages.findIndex((e) => e.id === id)
+  if (index > -1) {
+    const target = data.messages[index]
+    Object.keys(msgData).forEach((key) => {
+      target[key] = msgData[key]
+    })
+  }
+}
 
 const onClickSend = () => {
   sendPrompt()
@@ -24,10 +59,16 @@ const onKeyDown = (event: Event) => {
   sendPrompt()
 }
 
-const getList = () => {
-  getMessagesAPI().then((resData) => {
-    data.messages = resData as any;
+const getList = (params: any) => {
+  if (data.loading || data.loaded) return
+  getMessagesAPI(params).then((resData) => {
+    // data.messages = resData as any;
+    resData = resData || [] as any
+    data.messages = [...resData as any, ...data.messages];
+    data.loaded = !resData || !(resData as any).length
     scrollToBottom()
+  }).finally(() => {
+    data.loading = false
   })
 }
 
@@ -40,7 +81,8 @@ const sendPrompt = async () => {
     prompt: data.prompt,
     createTime: Date.now(),
     uri: "",
-    id: msgId
+    id: msgId,
+    status: MessageStatus.INIT
   }
   
   data.messages.push(msgObj)
@@ -66,7 +108,7 @@ const onUpscale = async (msg: Message) => {
     id: newId,
     prompt: data.prompt,
     index,
-    status: MessageStatus.START,
+    status: MessageStatus.INIT,
   }
   data.messages.push(newMsg)
   scrollToBottom()
@@ -80,9 +122,24 @@ const scrollToBottom = () => {
   })
 }
 
+const onContentWrapScroll = (event: Event) => {
+  if (data.loading || data.loaded) return
+  const el = contentWrap.value
+  if (el.scrollTop <= 100) {
+    getList({ pageNum: ++data.pageNum, pageSize: data.pageSize })
+  }
+}
+
 onMounted(() => {
+  getList({ pageNum: 1, pageSize: data.pageSize })
   scrollToBottom()
-  getList()
+  setTimeout(() => {
+    contentWrap.value.addEventListener('scroll', onContentWrapScroll)
+  })
+
+  return () => {
+    contentWrap.value.removeEventListener('scroll', onContentWrapScroll)
+  }
 })
 
 </script>

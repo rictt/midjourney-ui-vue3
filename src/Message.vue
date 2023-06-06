@@ -2,6 +2,7 @@
 import { Message, MessageStatus } from './interfaces/message';
 import { copyString } from './utils/clipboard';
 import Tag from './components/Tag.vue';
+import Image from './components/Image.vue';
 
 const props = defineProps({
   message: {
@@ -36,6 +37,8 @@ const getMessageStatus = (status: number) => {
       return '已完成'
     case MessageStatus.TIMEOUT:
       return '已超时'
+    default:
+      return '排队中'
   }
 }
 </script>
@@ -51,13 +54,7 @@ const getMessageStatus = (status: number) => {
       </div>
       <div class="text-sm text-slate-300 pt-1">状态：{{ getMessageStatus(message.status) }}</div>
       <div class="text-sm text-slate-300">时间：{{ message?.createTime ? getTimeStr(message?.createTime) : '2023/6/2 下午6:06:32' }}</div>
-      <div v-if="!message?.uri" class="flex flex-col items-center mt-2 p-4 bg-[#999] w-[140px] h-[140px] rounded-lg justify-center">
-        <img class="block w-[50px]" src="/src/assets/image.png" alt="">
-        <p class="pt-4 text-sm">正在排队生成中</p>
-      </div>
-      <div v-else class="flex-col w-full mt-2">
-        <img class="block" :src="message.uri" alt="">
-      </div>
+      <Image loadText="排队生成中" :url="message.uri" />
       <!-- upscale area -->
       <div v-if="message?.status == MessageStatus.DONE && !message.index">
         <Tag text="U1" @click="onClickUV(1)" />
