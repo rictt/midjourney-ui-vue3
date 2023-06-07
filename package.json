@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^10.1.2",
     "clipboard": "^2.0.11",
     "vue": "^3.2.47",
     "vue3-lazy": "^1.0.0-alpha.1"

@@ -4,6 +4,7 @@ import { Message, MessageStatus } from './interfaces/message'
 import MessageItem from './Message.vue'
 import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
 import { sendMessage, createWebsocket } from './utils/websocket'
+import { useDebounceFn } from '@vueuse/core'
 
 const ws = createWebsocket({
   onMessage(data) {
@@ -53,11 +54,11 @@ const onClickSend = () => {
   sendPrompt()
 }
 
-const onKeyDown = (event: Event) => {
+const onKeyDown = useDebounceFn((event: Event) => {
   event.stopPropagation()
   event.preventDefault()
   sendPrompt()
-}
+})
 
 const getList = (params: any) => {
   if (data.loading || data.loaded) return
@@ -106,7 +107,7 @@ const onUpscale = async (msg: Message) => {
   console.log("newId: ", newId);
   const newMsg: Message = {
     id: newId,
-    prompt: data.prompt,
+    prompt,
     index,
     status: MessageStatus.INIT,
   }

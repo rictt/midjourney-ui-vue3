@@ -3,6 +3,7 @@ import { Message, MessageStatus } from './interfaces/message';
 import { copyString } from './utils/clipboard';
 import Tag from './components/Tag.vue';
 import Image from './components/Image.vue';
+import { useDebounceFn } from '@vueuse/core'
 
 const props = defineProps({
   message: {
@@ -20,12 +21,12 @@ const getTimeStr = (timestamp: number | string) => {
   return new Date(timestamp).toLocaleString()
 }
 
-const onClickUV = (index: number) => {
+const onClickUV = useDebounceFn((index: number) => {
   emits('on-upscale', {
     ...props.message,
     index
   })
-}
+})
 
 const getMessageStatus = (status: number) => {
   switch (status) {
