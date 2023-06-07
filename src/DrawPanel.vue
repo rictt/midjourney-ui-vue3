@@ -146,7 +146,7 @@ onMounted(() => {
 
 <template>
   <div class="h-full py-4 max-sm:py-0">
-    <div class="relative h-full max-w-[980px] m-auto bg-gray-600 text-white px-10 py-4 rounded-lg sm:py-0 max-sm:py-2 max-sm:px-4">
+    <div class="relative h-full max-w-[980px] m-auto bg-gray-600 text-white px-10 py-4 rounded-lg sm:py-0 max-sm:py-2 max-sm:px-4 max-sm:rounded-none">
       <div id="contentWrap" ref="contentWrap" class="h-full pb-[120px] overflow-auto m-auto">
         <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="index">
           <MessageItem :message="item" @on-upscale="onUpscale" />

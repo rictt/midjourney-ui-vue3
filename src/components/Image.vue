@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 
-defineProps({
+const props = defineProps({
   url: {
-    type: String
+    type: String,
+    default: ""
   },
   width: {
     type: [String, Number],
@@ -14,6 +15,15 @@ defineProps({
     default: "加载中"
   },
   errorText: String,
+})
+
+const cdnHost = 'cdn.discordapp.com'
+const cdnHost2 = 'midjourney.cdn.zhishuyun.com'
+const trueUrl = computed(() => {
+  if (props.url && props.url.indexOf(cdnHost) !== -1) {
+    return props.url.replace(cdnHost, cdnHost2)
+  }
+  return props.url
 })
 
 const data = reactive({
@@ -37,5 +47,5 @@ const onLoad = () => {
 </script>
 
 <template>
-  <img v-if="url" v-lazy="url" class="my-1 w-[100%]" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad">
+  <img v-if="trueUrl" v-lazy="trueUrl" class="my-1 w-[100%]" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad">
 </template>
