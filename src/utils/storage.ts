@@ -38,4 +38,13 @@ export const setMessagesCache = (value: any) => {
   storage.set(MESSAGE_KEY, value)
 }
 
+const SETTINGS_KEY = 'SETTINGS'
+export const getSettings = <T>(): T => {
+  return storage.get(SETTINGS_KEY) as T
+}
+
+export const setSettings = (value: Object) => {
+  storage.set(SETTINGS_KEY, value)  
+}
+
 export default storage

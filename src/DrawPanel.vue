@@ -5,8 +5,21 @@ import MessageItem from './Message.vue'
 import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
 import { sendMessage, createWebsocket } from './utils/websocket'
 import { useDebounceFn } from '@vueuse/core'
+import Toast from './components/Toast/index'
+import UseModal from './components/Use-Modal/index.vue'
+import SettingsModal from './components/Settings-Modal/index.vue'
+import { showModal } from './components/Modal';
+import { drawStyles, randomPrompt, getJointPrompt } from './utils/index'
 
-const ws = createWebsocket({
+
+const showUseModal = () => {
+  showModal(UseModal)
+}
+
+const showSettingsModal = () => {
+  showModal(SettingsModal)
+}
+createWebsocket({
   onMessage(data) {
     // console.log('message event: ', event)
     console.log('message event: ', data)
@@ -24,20 +37,16 @@ const ws = createWebsocket({
   }
 })
 const contentWrap = ref<HTMLDivElement>()
-const data = reactive<{
-  messages: Message[],
-  prompt: string,
-  pageNum: number,
-  pageSize: number,
-  loading: boolean,
-  loaded: boolean
-}>({
+const data = reactive({
   prompt: '',
   messages: [],
   pageNum: 1,
   pageSize: 5,
   loading: false,
-  loaded: false
+  loaded: false,
+  useModalVisible: false,
+  styles: [...drawStyles],
+  currentStyle: ''
 })
 
 const findOneAndUpdate = (id: number, msgData: Partial<Message>) => {
@@ -55,38 +64,51 @@ const onClickSend = () => {
 }
 
 const onKeyDown = useDebounceFn((event: Event) => {
+  if (!data.prompt) {
+    Toast({
+      value: '描述不能为空'
+    })
+    return
+  }
   event.stopPropagation()
   event.preventDefault()
   sendPrompt()
 })
 
 const getList = (params: any) => {
-  if (data.loading || data.loaded) return
-  getMessagesAPI(params).then((resData) => {
-    // data.messages = resData as any;
-    ((resData || [] as any) as []).reverse();
-    data.messages = [...resData as any, ...data.messages];
-    data.loaded = !resData || !(resData as any).length
-    scrollToBottom()
-  }).finally(() => {
-    data.loading = false
+  return new Promise((resolve, reject) => {
+    if (data.loading || data.loaded) return
+    getMessagesAPI(params).then((resData) => {
+      // data.messages = resData as any;
+      // ((resData || [] as any) as []).reverse();
+      // data.messages = [...resData as any, ...data.messages];
+
+      data.messages = data.messages.concat(resData)
+
+      data.loaded = !resData || !(resData as any).length
+    }).finally(() => {
+      data.loading = false
+      resolve(undefined)
+    })
   })
 }
 
 const sendPrompt = async () => {
   data.prompt = data.prompt.trim()
   if (!data.prompt) return
-  const msgId = await createMessageAPI(data.prompt) as any;
+  const newPmt = getJointPrompt(data.prompt)
+  const msgId = await createMessageAPI(newPmt) as any;
   console.log("msgId: ", msgId)
   const msgObj: Message = {
-    prompt: data.prompt,
+    prompt: newPmt,
     createTime: Date.now(),
     uri: "",
     id: msgId,
     status: MessageStatus.INIT
   }
   
-  data.messages.push(msgObj)
+  // data.messages.push(msgObj)
+  data.messages.unshift(msgObj)
   data.prompt = ''
   scrollToBottom()
 }
@@ -97,7 +119,6 @@ const onUpscale = async (msg: Message) => {
   if (!msgHash || !msgId || !index || !prompt) {
     return console.log('upscale消息体不完整')
   }
- 
   const newId = await upscaleMessageAPI({
     prompt,
     index,
@@ -111,7 +132,8 @@ const onUpscale = async (msg: Message) => {
     index,
     status: MessageStatus.INIT,
   }
-  data.messages.push(newMsg)
+  // data.messages.push(newMsg)
+  data.messages.unshift(newMsg)
   scrollToBottom()
 }
 
@@ -123,19 +145,25 @@ const scrollToBottom = () => {
   })
 }
 
-const onContentWrapScroll = (event: Event) => {
+const onContentWrapScroll = useDebounceFn((event: Event) => {
   if (data.loading || data.loaded) return
   const el = contentWrap.value
   if (el.scrollTop <= 100) {
     getList({ pageNum: ++data.pageNum, pageSize: data.pageSize })
   }
+}, 500)
+
+const helpThink = () => {
+  const p = randomPrompt()
+  data.prompt = p
 }
 
 onMounted(() => {
-  getList({ pageNum: 1, pageSize: data.pageSize })
-  scrollToBottom()
-  setTimeout(() => {
-    contentWrap.value.addEventListener('scroll', onContentWrapScroll)
+  getList({ pageNum: 1, pageSize: data.pageSize }).finally(() => {
+    setTimeout(() => {
+      contentWrap.value.addEventListener('scroll', onContentWrapScroll)
+      scrollToBottom()
+    }, 32)
   })
 
   return () => {
@@ -146,27 +174,28 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-full py-4 max-sm:py-0">
-    <div class="relative h-full max-w-[980px] m-auto bg-gray-600 text-white px-10 py-4 rounded-lg sm:py-0 max-sm:py-2 max-sm:px-4 max-sm:rounded-none">
-      <div id="contentWrap" ref="contentWrap" class="h-full pb-[120px] overflow-auto m-auto">
-        <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="index">
-          <MessageItem :message="item" @on-upscale="onUpscale" />
+  <div class="h-full w-full max-sm:py-0 bg-gray-600">
+    <div class="relative h-full max-w-[980px] bg-gray-700 m-auto text-white px-10 py-4 sm:py-0 max-sm:py-2 max-sm:px-4 rounded-none">
+      <div id="contentWrap" ref="contentWrap" class="h-[calc(100%-150px)]  overflow-auto m-auto flex flex-col-reverse">
+        <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="item.id">
+          <MessageItem :key="item.id" :message="item" @on-upscale="onUpscale" />
         </div>
       </div>
       <div class="absolute left-10 right-10 max-sm:left-2 max-sm:right-2 bottom-4 max-sm:bottom-2 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
         <!-- 快捷/帮助区域 -->
-        <div class="flex w-full pb-1 text-sm">
-          <p class="underline text-orange-400 pr-1 cursor-pointer">垫图</p>
-          <p class="underline text-orange-400 pr-1 cursor-pointer">帮我想一个</p>
+        <div class="flex w-full px-2 pb-2 pt-1 text-md select-none">
+          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="helpThink">帮我想一个</p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置参数</p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置风格</p>
           <p class="flex-1"></p>
-          <p class="underline text-orange-400 pr-1 cursor-pointer">微信交流群</p>
-          <p class="underline text-orange-400 cursor-pointer">使用说明</p>
-        </div>
+          <p class="underline text-orange-400 pr-4 cursor-pointer">微信交流群</p>
+          <p class="underline text-orange-400 cursor-pointer" @click.stop="showUseModal">使用说明</p>
+        </div>        
         <!-- 输入框 -->
         <div class="w-full bg-white flex items-center">
           <textarea 
             v-model="data.prompt"
-            class="flex-1 px-4 py-2 rounded-[8px] outline-none text-sm text-gray-500" 
+            class="flex-1 px-4 py-2 resize-none rounded-[8px] outline-none max-sm:text-sm text-md text-gray-500" 
             autofocus 
             placeholder="输入图片描述，例如'可爱的橘黄色的猫咪, 迪士尼风格'、'海边，机器人，小女孩，吉卜力风格'等" 
             type="textarea"

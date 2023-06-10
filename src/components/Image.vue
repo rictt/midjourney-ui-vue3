@@ -47,5 +47,7 @@ const onLoad = () => {
 </script>
 
 <template>
-  <img v-if="trueUrl" v-lazy="trueUrl" class="my-1 w-[100%]" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad">
+  <div class="relative w-full bg-gray-500 rounded my-2 h-0 pb-[100%]">
+    <img v-if="trueUrl" v-lazy="trueUrl" class="absolute top-0 left-0 w-[100%] h-[100%] object-contain" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad">
+  </div>
 </template>

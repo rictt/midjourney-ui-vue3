@@ -4,7 +4,11 @@ import { copyString } from './utils/clipboard';
 import Tag from './components/Tag.vue';
 import Image from './components/Image.vue';
 import { useDebounceFn } from '@vueuse/core'
+import { onMounted, ref, computed } from 'vue'
+import Toast from './components/Toast';
 
+const itemWidth = ref(0)
+const imageRef = ref<any>()
 const props = defineProps({
   message: {
     type: Object as () => Message
@@ -15,6 +19,9 @@ const emits = defineEmits(['on-upscale'])
 
 const clickToCopy = (str: string) => {
   copyString(str)
+  Toast({
+    value: "复制成功"
+  })
 }
 
 const getTimeStr = (timestamp: number | string) => {
@@ -38,10 +45,15 @@ const getMessageStatus = (status: number) => {
       return '已完成'
     case MessageStatus.TIMEOUT:
       return '已超时'
+    case MessageStatus.FAILED:
+      return '服务错误'
+    case MessageStatus.SENSITIVE:
+      return '输入错误，敏感词汇'
     default:
-      return '排队中'
+      return '初始化'
   }
 }
+
 </script>
 
 <template>
@@ -55,8 +67,10 @@ const getMessageStatus = (status: number) => {
       </div>
       <div class="text-sm text-slate-300 pt-1">状态：{{ getMessageStatus(message.status) }}</div>
       <div class="text-sm text-slate-300">时间：{{ message?.createTime ? getTimeStr(message?.createTime) : '2023/6/2 下午6:06:32' }}</div>
-      <Image loadText="排队生成中" :url="message.uri" />
-      <!-- upscale area -->
+
+      <Image v-if="message.uri" ref="imageRef" loadText="排队生成中" :url="message.uri" />
+
+      <!-- upscale area 升级区域 -->
       <div v-if="message?.status == MessageStatus.DONE && !message.index">
         <Tag text="U1" @click="onClickUV(1)" />
         <Tag text="U2" @click="onClickUV(2)" />

@@ -17,4 +17,6 @@ export enum MessageStatus {
   START = 11,
   DONE = 12,
   TIMEOUT = 13,
+  FAILED = 14,
+  SENSITIVE = 15
 }
