@@ -36,8 +36,7 @@ export const createWebsocket = (ops?: CreateWsOptions) => {
     }
   }
 
-  const ws = wsInstance = new WebSocket(`ws://43.153.50.34:3333`)
-  // const ws = wsInstance = new WebSocket(`ws://localhost:3333`);
+  const ws = wsInstance = new WebSocket(import.meta.env.VITE_APP_WS_URL);
   ws.addEventListener('open', (event) => {
     ws.send(JSON.stringify({
       event: 'init'

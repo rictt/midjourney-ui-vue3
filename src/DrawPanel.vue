@@ -67,7 +67,10 @@ const onClickSend = () => {
   sendPrompt()
 }
 
-const onKeyDown = useDebounceFn((event: Event) => {
+const onKeyDown = useDebounceFn((event: KeyboardEvent) => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
+  }
   event.stopPropagation()
   event.preventDefault()
   sendPrompt()

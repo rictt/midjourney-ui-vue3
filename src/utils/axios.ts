@@ -3,12 +3,9 @@ import Toast from '../components/Toast/index'
 import { tokenStorage, userStorage } from '@/utils/storage'
 import { showLoginModal } from '@/utils/index';
 
-// export const host = "http://localhost:8999";
-// export const host = "/api";
-export const host = "http://43.153.50.34:8999";
+export const host = import.meta.env.VITE_APP_API_URL;
 
 export const $http = axios.create({
-  // baseURL: host + '/api'
   baseURL: host
 });
 
