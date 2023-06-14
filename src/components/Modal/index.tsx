@@ -4,19 +4,21 @@ import { createVNode, VNodeTypes, render } from 'vue'
 interface IShowModal {
   title?: string;
   visible?: boolean;
+  showClose?: boolean;
   onClose?: () => void;
 }
-export const showModal = (component: VNodeTypes, props?: IShowModal) => {
+export const showModal = (component: VNodeTypes, props: IShowModal = {}) => {
   return new Promise((resolve, reject) => {
     const container = document.createElement('div')
 
     const vm = createVNode(Modal, {
-      title: "使用说明",
+      title: props.title,
       modelValue: true,
+      showClose: props.showClose,
       onClose: () => {
         document.body.removeChild(container)
-        props?.onClose()
-      }
+        props?.onClose?.()
+      },
     }, {
       default: () => createVNode(component, {
         close: () => {

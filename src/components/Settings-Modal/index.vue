@@ -2,7 +2,7 @@
 import { reactive, ref, watch } from 'vue'
 import { drawStyles } from '../../utils';
 import Tag from '../../components/Tag.vue'
-import { getSettings, setSettings } from '../../utils/storage'
+import { settingsStorage } from '../../utils/storage'
 import Toast from '../Toast';
 import { ISettings } from '../../interfaces/global'
 
@@ -38,7 +38,7 @@ const defaultSettings: ISettings = {
   seed: '',
   currentStyle: ''
 }
-const settings = getSettings<ISettings>() || defaultSettings
+const settings = settingsStorage.get<ISettings>() || defaultSettings
 const form = reactive(settings)
 
 const data = reactive({
@@ -50,7 +50,7 @@ const handleChange = (value) => {
 }
 
 const onClickSave = () => {
-  setSettings(form)
+  settingsStorage.set(form)
   Toast({ value: "保存成功" })
   setTimeout(() => {
     props.close?.()

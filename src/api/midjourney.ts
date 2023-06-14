@@ -7,19 +7,19 @@ interface IUpscaleAPI {
 }
 
 export const getMessagesAPI = (params?: any) => {
-  return $http.get('/list', {
+  return $http.get('/messages', {
     params
   })
 }
 
 export const createMessageAPI = (prompt: string) => {
-  return $http.post('/imagine', {
+  return $http.post('/mj/imagine', {
     prompt
   })
 }
 
 export const upscaleMessageAPI = (body: IUpscaleAPI) => {
-  return $http.post('/upscale', body)
+  return $http.post('/mj/upscale', body)
 }
 
 

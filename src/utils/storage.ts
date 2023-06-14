@@ -4,7 +4,15 @@ const PREFIX_KEY = 'STORAGE_'
 const getFullKey = (key: string) => {
   return PREFIX_KEY + key
 }
-export const storage = {
+
+interface IStorage {
+  get: (key: string) => any;
+  set: (key: string, value: any) => any;
+  remove: (key: string) => boolean;
+  clear: () => void;
+}
+
+export const storage: IStorage = {
   get(key: string) {
     const _key = getFullKey(key)
     let value = localStorage.getItem(_key);
@@ -24,27 +32,39 @@ export const storage = {
   remove(key: string) {
     const _key = getFullKey(key)
     localStorage.removeItem(_key)
+    return true
   },
   clear() {
     localStorage.clear()
   }
 }
 
-const MESSAGE_KEY = 'MESSAGES'
-export const getMessagesCache = () => {
-  return storage.get(MESSAGE_KEY) || []
-}
-export const setMessagesCache = (value: any) => {
-  storage.set(MESSAGE_KEY, value)
+class FactoryStorage<T> {
+  name: string;
+  storage: IStorage;
+
+  constructor(name) {
+    this.name = name;
+    this.storage = storage;
+  }
+  
+  get<T>() : T {
+    return this.storage.get(this.name)
+  }
+  set(value: any) {
+    return this.storage.set(this.name, value)
+  }
+  remove() {
+    return this.storage.remove(this.name)
+  }
+  clear() {
+    return this.storage.clear()
+  }
 }
 
-const SETTINGS_KEY = 'SETTINGS'
-export const getSettings = <T>(): T => {
-  return storage.get(SETTINGS_KEY) as T
-}
-
-export const setSettings = (value: Object) => {
-  storage.set(SETTINGS_KEY, value)  
-}
+export const tokenStorage = new FactoryStorage('TTTOOOOKKKKKK')
+export const userStorage = new FactoryStorage('UUUUUSSSSEEERR')
+export const settingsStorage = new FactoryStorage('SETTINGS')
+export const limitStorage = new FactoryStorage('LLLIMITTT')
 
 export default storage

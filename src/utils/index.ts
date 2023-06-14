@@ -1,6 +1,7 @@
-import { set } from "@vueuse/core";
 import { ISettings } from "../interfaces/global";
-import { getSettings } from "./storage"
+import { settingsStorage } from "./storage"
+import { showModal } from '../components/Modal';
+import { defineAsyncComponent } from "vue";
 
 const prompts = [
   "A running dog, cute, cartoon style",
@@ -34,7 +35,7 @@ export const drawStyles = [
 ]
 
 export const getJointPrompt = (prompt: string) => {
-  const settings = getSettings<ISettings>();
+  const settings = settingsStorage.get<ISettings>();
   let params = ''
   if (settings.currentStyle && prompt.indexOf('style') === -1) {
     params += `, ${settings.currentStyle} `
@@ -54,4 +55,14 @@ export const getJointPrompt = (prompt: string) => {
 export const randomPrompt = () => {
   const length = prompts.length
   return prompts[Math.floor(Math.random() * length)]
+}
+
+
+export const showLoginModal = () => {
+  const LoginModal = defineAsyncComponent(() => import('../components/Login-Modal/index.vue'));
+
+  showModal(LoginModal, {
+    title: "",
+    showClose: false
+  })
 }

@@ -32,11 +32,8 @@ export default defineComponent({
   
 <style>
 .toast-box {
-  /* position: fixed;
-  width: 100vw;
-  height: 100vh;
-  top: 0;
-  left: 0; */
+  position: fixed;
+  z-index: 2001;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -8,7 +8,7 @@ export interface IProps {
   color?: string;
 }
 const defaultOpt = { // 创建默认参数
-  duration: 3000
+  duration: 2000
 }
 
 export interface ResultParams {

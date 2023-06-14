@@ -13,6 +13,10 @@ const props = defineProps({
     type: Function,
     default: null
   },
+  showClose: {
+    type: Boolean,
+    default: true
+  }
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -43,7 +47,7 @@ defineExpose({
       <div class="max-sm:w-[90%] text-white bg-gray-500 px-3 p-2 rounded z-[2002]">
         <div v-if="title" class="flex py-2 flex-row justify-between">
           <div class="">{{ title }}</div>
-          <div class="text-orange-500 cursor-pointer" @click.stop="onManualClose">x</div>
+          <div v-if="showClose" class="text-orange-500 cursor-pointer" @click.stop="onManualClose">x</div>
         </div>
         <div class="py-1">
           <slot />

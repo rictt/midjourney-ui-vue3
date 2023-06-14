@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, defineAsyncComponent } from 'vue';
 import { Message, MessageStatus } from './interfaces/message'
 import MessageItem from './Message.vue'
 import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
@@ -9,15 +9,19 @@ import Toast from './components/Toast/index'
 import UseModal from './components/Use-Modal/index.vue'
 import SettingsModal from './components/Settings-Modal/index.vue'
 import { showModal } from './components/Modal';
-import { drawStyles, randomPrompt, getJointPrompt } from './utils/index'
-
+import { drawStyles, randomPrompt, getJointPrompt, showLoginModal } from './utils/index'
+import { useLimitHook } from '@/hooks/use-limit-hook';
 
 const showUseModal = () => {
-  showModal(UseModal)
+  showModal(UseModal, {
+    title: "使用说明"
+  })
 }
 
 const showSettingsModal = () => {
-  showModal(SettingsModal)
+  showModal(SettingsModal, {
+    title: "设置"
+  })
 }
 createWebsocket({
   onMessage(data) {
@@ -64,12 +68,6 @@ const onClickSend = () => {
 }
 
 const onKeyDown = useDebounceFn((event: Event) => {
-  if (!data.prompt) {
-    Toast({
-      value: '描述不能为空'
-    })
-    return
-  }
   event.stopPropagation()
   event.preventDefault()
   sendPrompt()
@@ -95,7 +93,21 @@ const getList = (params: any) => {
 
 const sendPrompt = async () => {
   data.prompt = data.prompt.trim()
-  if (!data.prompt) return
+  if (!data.prompt) {
+    Toast({
+      value: '描述不能为空'
+    })
+    return
+  }
+
+  const { isExceedFreeTimesByDay, recordTimeUse } = useLimitHook()
+  if (isExceedFreeTimesByDay()) {
+    Toast({ value: "今日免费次数已用尽，请先登录" })
+    setTimeout(() => {
+      showLoginModal()
+    }, 2000)
+    return
+  }
   const newPmt = getJointPrompt(data.prompt)
   const msgId = await createMessageAPI(newPmt) as any;
   console.log("msgId: ", msgId)
@@ -107,9 +119,9 @@ const sendPrompt = async () => {
     status: MessageStatus.INIT
   }
   
-  // data.messages.push(msgObj)
   data.messages.unshift(msgObj)
   data.prompt = ''
+  recordTimeUse()
   scrollToBottom()
 }
 
@@ -174,6 +186,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- <div class="h-full w-full max-sm:py-0 bg-gray-600" v-loading:[title]="true"> -->
   <div class="h-full w-full max-sm:py-0 bg-gray-600">
     <div class="relative h-full max-w-[980px] bg-gray-700 m-auto text-white px-10 py-4 sm:py-0 max-sm:py-2 max-sm:px-4 rounded-none">
       <div id="contentWrap" ref="contentWrap" class="h-[calc(100%-150px)]  overflow-auto m-auto flex flex-col-reverse">
