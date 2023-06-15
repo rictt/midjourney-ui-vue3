@@ -7,9 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/Image copy.vue')['default']
     ElImage: typeof import('element-plus/es')['ElImage']
-    ElPopover: typeof import('element-plus/es')['ElPopover']
     GroupModal: typeof import('./src/components/Group-Modal/index.vue')['default']
     Image: typeof import('./src/components/Image.vue')['default']
     'Image copy': typeof import('./src/components/Image copy.vue')['default']
