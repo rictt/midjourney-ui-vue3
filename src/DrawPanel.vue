@@ -204,6 +204,7 @@ onMounted(() => {
           <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置参数</p>
           <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置风格</p>
           <p class="flex-1"></p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer font-bold" @click.stop="showLoginModal">登录/注册</p>
           <p class="underline text-orange-400 pr-4 cursor-pointer">微信交流群</p>
           <p class="underline text-orange-400 cursor-pointer" @click.stop="showUseModal">使用说明</p>
         </div>        

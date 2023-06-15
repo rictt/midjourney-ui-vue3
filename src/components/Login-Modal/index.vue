@@ -69,6 +69,7 @@ const onClickSave = () => {
       Toast({ value: "注册成功，请登录", duration: 1500 })
       form.password = ''
       form.rePassword = ''
+      form.type = FORM_TYPE.LOGIN
     } else {
       Toast({ value: "登录成功", duration: 1500 })
       const { token, ...userInfo } = res

@@ -1,5 +1,7 @@
 
 
+import { io } from 'socket.io-client'
+ 
 interface CreateWsOptions {
   onOpen?: (event: Event) => void;
   onError?: (event: Event) => void;
@@ -36,26 +38,40 @@ export const createWebsocket = (ops?: CreateWsOptions) => {
     }
   }
 
-  const ws = wsInstance = new WebSocket(import.meta.env.VITE_APP_WS_URL);
-  ws.addEventListener('open', (event) => {
-    ws.send(JSON.stringify({
-      event: 'init'
-    }))
-    ops?.onOpen?.(event)
-  });
-  ws.addEventListener('error', ops?.onError);
-  ws.addEventListener('message', (event: MessageEvent) => {
-    let data
-    try {
-      data = JSON.parse(event.data)
-      const { event: type, data: eventData } = data
-      dispatchEventData(type, eventData)
-    } catch (error) {
-      console.log(error)
-    }
-  });
-  ws.addEventListener('close', ops?.onClose);
-  return ws;
+  console.log("ws url: ", import.meta.env.VITE_APP_WS_URL);
+  const socket = io(import.meta.env.VITE_APP_WS_URL);
+  socket.on(EventType.TASK_UPDATE, (data) => {
+    console.log("data get: ", data)
+    ops?.onTaskUpdate?.(data)
+  })
+  // const ws = wsInstance = new WebSocket("ws://localhost:3333/socket.io/");
+  // ws.addEventListener('open', (event) => {
+  //   console.log('open')
+  //   ws.send(JSON.stringify({
+  //     event: 'init',
+  //     // data: {
+  //     //   a: 123,
+  //     //   b: 456
+  //     // }
+  //   }))
+  //   ops?.onOpen?.(event)
+  // });
+  // ws.addEventListener('error', (error) => {
+  //   console.log(error)
+  //   ops?.onError?.(error)
+  // });
+  // ws.addEventListener('message', (event: MessageEvent) => {
+  //   let data
+  //   try {
+  //     data = JSON.parse(event.data)
+  //     const { event: type, data: eventData } = data
+  //     dispatchEventData(type, eventData)
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // });
+  // ws.addEventListener('close', ops?.onClose);
+  return socket;
 }
 
 export const sendMessage = (data: any) => {
