@@ -88,7 +88,7 @@ const onClickCancel = () => {
 </script>
 
 <template>
-  <div class="max-w-[600px] px-8 py-4 min-w-[420px]" v-loading="form.loading">
+  <div class="max-w-[600px] px-8 py-4 min-w-[420px]" todayUsed="form.loading">
     <img class="block m-auto pb-4" src="/src/assets/coffee.png" alt="">
     <p class="py-1 pb-4 text-center text-orange-100 font-bold">欢迎使用</p>
     <div class="flex justify-between items-center py-2 text-sm mb-2" >

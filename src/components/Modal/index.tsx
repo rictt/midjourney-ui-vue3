@@ -6,6 +6,8 @@ interface IShowModal {
   visible?: boolean;
   showClose?: boolean;
   onClose?: () => void;
+  closeOnClickModal?: boolean;
+  closeOnPressEscape?: boolean
 }
 export const showModal = (component: VNodeTypes, props: IShowModal = {}) => {
   return new Promise((resolve, reject) => {
@@ -15,6 +17,8 @@ export const showModal = (component: VNodeTypes, props: IShowModal = {}) => {
       title: props.title,
       modelValue: true,
       showClose: props.showClose,
+      closeOnClickModal: props.closeOnClickModal || false,
+      closeOnPressEscape: props.closeOnPressEscape || false,
       onClose: () => {
         document.body.removeChild(container)
         props?.onClose?.()

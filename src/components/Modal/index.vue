@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, VNodeTypes } from 'vue'
+import { ref, watch, VNodeTypes, onMounted } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -16,6 +16,14 @@ const props = defineProps({
   showClose: {
     type: Boolean,
     default: true
+  },
+  closeOnClickModal: {
+    type: Boolean,
+    default: false,
+  },
+  closeOnPressEscape: {
+    type: Boolean,
+    default: false
   }
 })
 const emit = defineEmits(['update:modelValue'])
@@ -39,11 +47,32 @@ defineExpose({
   close: onManualClose
 })
 
+const onClickMask = () => {
+  if (props.closeOnClickModal) {
+    onManualClose()
+  }
+}
+
+const onKeyDown = (evt: KeyboardEvent) => {
+  if (evt.key === 'Escape') {
+    if (props.closeOnPressEscape) {
+      onManualClose()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeyDown)
+  return () => {
+    window.removeEventListener('keydown', onKeyDown)
+  }
+})
+
 </script>
 
 <template>
     <div v-if="visible" class="fixed top-0 left-0 right-0 bottom-0 z-[2000] w-full h-full flex items-center justify-center">
-      <div class="fixed top-0 right-0 bottom-0 left-0 w-full h-full z-[2001] bg-black opacity-50"></div>
+      <div @click.stop="onClickMask" class="fixed top-0 right-0 bottom-0 left-0 w-full h-full z-[2001] bg-black opacity-50"></div>
       <div class="max-sm:w-[90%] text-white bg-gray-500 px-3 p-2 rounded z-[2002]">
         <div v-if="title" class="flex py-2 flex-row justify-between">
           <div class="">{{ title }}</div>

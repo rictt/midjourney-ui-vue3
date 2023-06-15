@@ -1,4 +1,6 @@
 
+import { UserType, SettingsType } from '@/interfaces/global'
+
 const PREFIX_KEY = 'STORAGE_'
 
 const getFullKey = (key: string) => {
@@ -39,32 +41,37 @@ export const storage: IStorage = {
   }
 }
 
+
+export type ListenerCallback = (newValue: any) => void;
 class FactoryStorage<T> {
   name: string;
   storage: IStorage;
+  listeners: ListenerCallback[]
 
   constructor(name) {
     this.name = name;
     this.storage = storage;
+    this.listeners = []
   }
   
-  get<T>() : T {
+  get<T1>() : T & T1 {
     return this.storage.get(this.name)
   }
   set(value: any) {
-    return this.storage.set(this.name, value)
+    this.storage.set(this.name, value)
+    this.listeners.forEach(listener => listener(value))
   }
   remove() {
     return this.storage.remove(this.name)
   }
-  clear() {
-    return this.storage.clear()
+  addChangeListener(listener: ListenerCallback) {
+    this.listeners.push(listener)
   }
 }
 
 export const tokenStorage = new FactoryStorage('TTTOOOOKKKKKK')
-export const userStorage = new FactoryStorage('UUUUUSSSSEEERR')
-export const settingsStorage = new FactoryStorage('SETTINGS')
+export const userStorage = new FactoryStorage<UserType | null>('UUUUUSSSSEEERR')
+export const settingsStorage = new FactoryStorage<SettingsType>('SETTINGS')
 export const limitStorage = new FactoryStorage('LLLIMITTT')
 
 export default storage

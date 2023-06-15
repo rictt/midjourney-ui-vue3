@@ -1,4 +1,3 @@
-import { ISettings } from "../interfaces/global";
 import { settingsStorage } from "./storage"
 import { showModal } from '../components/Modal';
 import { defineAsyncComponent } from "vue";
@@ -35,7 +34,7 @@ export const drawStyles = [
 ]
 
 export const getJointPrompt = (prompt: string) => {
-  const settings = settingsStorage.get<ISettings>();
+  const settings = settingsStorage.get();
   let params = ''
   if (settings.currentStyle && prompt.indexOf('style') === -1) {
     params += `, ${settings.currentStyle} `

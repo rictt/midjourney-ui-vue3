@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, defineAsyncComponent } from 'vue';
+import { reactive, ref, onMounted, createVNode } from 'vue';
 import { Message, MessageStatus } from './interfaces/message'
 import MessageItem from './Message.vue'
 import { getMessagesAPI, createMessageAPI, upscaleMessageAPI } from './api/midjourney'
-import { sendMessage, createWebsocket } from './utils/websocket'
-import { useDebounceFn } from '@vueuse/core'
+import { createWebsocket } from './utils/websocket'
+import { useDebounceFn, } from '@vueuse/core'
 import Toast from './components/Toast/index'
 import UseModal from './components/Use-Modal/index.vue'
 import SettingsModal from './components/Settings-Modal/index.vue'
 import { showModal } from './components/Modal';
-import { drawStyles, randomPrompt, getJointPrompt, showLoginModal } from './utils/index'
+import { drawStyles, randomPrompt, getJointPrompt } from './utils/index'
 import { useLimitHook } from '@/hooks/use-limit-hook';
+import { userStorage } from '@/utils/storage';
+import { useUser } from '@/hooks/use-user'
+import GroupModal from '@/components/Group-Modal/index.vue'
 
+
+const { isLogin, showLoginModal, userLogout } = useUser()
 const showUseModal = () => {
   showModal(UseModal, {
     title: "使用说明"
@@ -20,17 +25,12 @@ const showUseModal = () => {
 
 const showSettingsModal = () => {
   showModal(SettingsModal, {
-    title: "设置"
+    title: "设置",
+    closeOnClickModal: true
   })
 }
+
 createWebsocket({
-  onMessage(data) {
-    // console.log('message event: ', event)
-    console.log('message event: ', data)
-  },
-  onOnLine(data) {
-    console.log('online data: ', data)
-  },
   onTaskUpdate(data: Message) {
     console.log('taskupdate data: ', data)
     const { id } = data
@@ -46,11 +46,13 @@ const data = reactive({
   messages: [],
   pageNum: 1,
   pageSize: 5,
+  initLoading: true,
   loading: false,
   loaded: false,
   useModalVisible: false,
   styles: [...drawStyles],
-  currentStyle: ''
+  currentStyle: '',
+  onlyCurrentUser: false
 })
 
 const findOneAndUpdate = (id: number, msgData: Partial<Message>) => {
@@ -80,15 +82,12 @@ const getList = (params: any) => {
   return new Promise((resolve, reject) => {
     if (data.loading || data.loaded) return
     getMessagesAPI(params).then((resData) => {
-      // data.messages = resData as any;
-      // ((resData || [] as any) as []).reverse();
-      // data.messages = [...resData as any, ...data.messages];
-
       data.messages = data.messages.concat(resData)
 
       data.loaded = !resData || !(resData as any).length
     }).finally(() => {
       data.loading = false
+      data.initLoading = false
       resolve(undefined)
     })
   })
@@ -111,6 +110,9 @@ const sendPrompt = async () => {
     }, 2000)
     return
   }
+  if (data.prompt.length > 500) {
+    return Toast({ value: "描述过长，最多500个字符，包括标点符号" })
+  }
   const newPmt = getJointPrompt(data.prompt)
   const msgId = await createMessageAPI(newPmt) as any;
   console.log("msgId: ", msgId)
@@ -121,11 +123,11 @@ const sendPrompt = async () => {
     id: msgId,
     status: MessageStatus.INIT
   }
-  
+
   data.messages.unshift(msgObj)
   data.prompt = ''
   recordTimeUse()
-  scrollToBottom()
+  // scrollToBottom()
 }
 
 const onUpscale = async (msg: Message) => {
@@ -155,7 +157,7 @@ const onUpscale = async (msg: Message) => {
 const scrollToBottom = () => {
   setTimeout(() => {
     if (contentWrap.value) {
-      contentWrap.value.scrollTop = contentWrap.value.scrollHeight
+      // contentWrap.value.scrollTop = contentWrap.value.scrollHeight
     }
   })
 }
@@ -173,8 +175,42 @@ const helpThink = () => {
   data.prompt = p
 }
 
+const onlyForMe = () => {
+  setTimeout(() => {
+    const user = userStorage.get();
+    const isForUser = data.onlyCurrentUser
+    const queries: any = {
+      pageNum: 1,
+      pageSize: data.pageSize,
+    }
+    if (isForUser) {
+      if (!user) {
+        data.onlyCurrentUser = false;
+        return showLoginModal()
+      }
+      if (user && user.username) {
+        queries.username = user.username
+      }
+    }
+    data.loaded = false
+    data.initLoading = true;
+    data.messages = []
+    data.pageNum = 1
+    getList(queries)
+    data.loading = true
+  })
+}
+
+const showGroupModal = () => {
+  showModal(GroupModal, {
+    closeOnClickModal: true,
+    closeOnPressEscape: true
+  })
+}
+
 onMounted(() => {
   getList({ pageNum: 1, pageSize: data.pageSize }).finally(() => {
+    data.initLoading = false
     setTimeout(() => {
       contentWrap.value.addEventListener('scroll', onContentWrapScroll)
       scrollToBottom()
@@ -191,34 +227,37 @@ onMounted(() => {
 <template>
   <!-- <div class="h-full w-full max-sm:py-0 bg-gray-600" v-loading:[title]="true"> -->
   <div class="h-full w-full max-sm:py-0 bg-gray-600">
-    <div class="relative h-full max-w-[980px] bg-gray-700 m-auto text-white px-10 py-4 sm:py-0 max-sm:py-2 max-sm:px-4 rounded-none">
-      <div id="contentWrap" ref="contentWrap" class="h-[calc(100%-150px)]  overflow-auto m-auto flex flex-col-reverse">
+    <div
+      class="relative h-full max-w-[980px] bg-gray-700 m-auto text-white px-10 py-4 sm:py-0 max-sm:py-2 max-sm:px-4 rounded-none">
+      <div v-loading="data.initLoading" id="contentWrap" ref="contentWrap"
+        class="h-[calc(100%-150px)]  overflow-auto m-auto flex flex-col-reverse">
         <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="item.id">
           <MessageItem :key="item.id" :message="item" @on-upscale="onUpscale" />
         </div>
       </div>
-      <div class="absolute left-10 right-10 max-sm:left-2 max-sm:right-2 bottom-4 max-sm:bottom-2 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
+      <div
+        class="absolute left-10 right-10 max-sm:left-2 max-sm:right-2 bottom-4 max-sm:bottom-2 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
         <!-- 快捷/帮助区域 -->
-        <div class="flex w-full px-2 pb-2 pt-1 text-md select-none">
-          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="helpThink">帮我想一个</p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置参数</p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置风格</p>
+        <div class="flex w-full px-2 pb-2 pt-1 text-md select-none flex-wrap">
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="helpThink">想一个</p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="showSettingsModal">设置</p>
+          <!-- <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置风格</p> -->
+          <p class="underline text-orange-400 cursor-pointer max-sm:text-sm" @click.stop="showUseModal">使用说明</p>
+          <p class="underline text-orange-400 pr-4 ml-4 max-sm:text-sm" @click.stop="onlyForMe">
+            <input id="onlyMe" v-model="data.onlyCurrentUser" type="checkbox" class="cursor-pointer">
+            <label for="onlyMe" class="cursor-pointer">只看自己</label>
+          </p>
           <p class="flex-1"></p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer font-bold" @click.stop="showLoginModal">登录/注册</p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer">微信交流群</p>
-          <p class="underline text-orange-400 cursor-pointer" @click.stop="showUseModal">使用说明</p>
-        </div>        
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click="showGroupModal">交流群</p>
+          <p v-if="!isLogin" class="underline text-orange-400 pr-4 cursor-pointer font-bold max-sm:text-sm" @click.stop="showLoginModal">登录/注册</p>
+          <p v-if="isLogin" class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="userLogout">退出</p>
+        </div>
         <!-- 输入框 -->
         <div class="w-full bg-white flex items-center">
-          <textarea 
-            v-model="data.prompt"
-            class="flex-1 px-4 py-2 resize-none rounded-[8px] outline-none max-sm:text-sm text-md text-gray-500" 
-            autofocus 
-            placeholder="输入图片描述，例如'可爱的橘黄色的猫咪, 迪士尼风格'、'海边，机器人，小女孩，吉卜力风格'等" 
-            type="textarea"
-            :rows="2"
-            @keydown.enter.prevent.stop="onKeyDown"
-          />
+          <textarea v-model="data.prompt"
+            class="flex-1 px-4 py-2 resize-none rounded-[8px] outline-none max-sm:text-sm text-md text-gray-500" autofocus
+            placeholder="输入图片描述，例如'可爱的橘黄色的猫咪, 迪士尼风格'、'海边，机器人，小女孩，吉卜力风格'等" type="textarea" :rows="2"
+            @keydown.enter.prevent.stop="onKeyDown" />
           <img @click="onClickSend" class="mx-4 w-[36px] h-[36px] cursor-pointer" src="/src/assets/send.png" alt="">
         </div>
       </div>

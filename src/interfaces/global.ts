@@ -1,4 +1,4 @@
-export interface ISettings {
+export interface SettingsType {
   // 模型
   model?: string
   // 宽度比例
@@ -11,4 +11,12 @@ export interface ISettings {
   currentStyle?: string
 
   [key: string]: any
+}
+
+export interface UserType {
+  username: string;
+  id: number;
+  status: number;
+  times: number;
+  createTime: Date;
 }

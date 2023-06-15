@@ -4,7 +4,7 @@ import { drawStyles } from '../../utils';
 import Tag from '../../components/Tag.vue'
 import { settingsStorage } from '../../utils/storage'
 import Toast from '../Toast';
-import { ISettings } from '../../interfaces/global'
+import { SettingsType } from '../../interfaces/global'
 
 const props = defineProps({
   modelValue: {
@@ -31,14 +31,14 @@ watch(() => props.modelValue, (value) => {
   visible.value = value
 })
 
-const defaultSettings: ISettings = {
+const defaultSettings: SettingsType = {
   model: '',
   widthRadio: 1,
   heightRadio: 1,
   seed: '',
   currentStyle: ''
 }
-const settings = settingsStorage.get<ISettings>() || defaultSettings
+const settings = settingsStorage.get() || defaultSettings
 const form = reactive(settings)
 
 const data = reactive({
@@ -63,7 +63,7 @@ const onClickCancel = () => {
 </script>
 
 <template>
-  <div class="max-w-[600px]">
+  <div class="max-w-[600px] max-h-[80vh] overflow-auto">
     <div class="px-2 py-2 leading-8">
       <div class="flex flex-row items-center">
         <div class="w-[10px] h-[10px] bg-orange-500 mr-2"></div>

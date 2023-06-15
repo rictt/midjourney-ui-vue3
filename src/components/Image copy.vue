@@ -48,15 +48,6 @@ const onLoad = () => {
 
 <template>
   <div class="relative w-full bg-gray-500 rounded my-2 h-0 pb-[100%]">
-    <el-image style="position: absolute !important;" class="absolute w-[100%] h-[100%] object-contain" v-if="trueUrl"
-      fit="contain" :src="trueUrl" lazy :preview-src-list="[trueUrl]" hide-on-click-modal>
-      <template #placeholder>
-        <div class="w-full h-full" v-loading="true" element-loading-text="正在加载图片"></div>
-      </template>
-      <template #error>
-        <div class="w-full h-full flex items-center justify-center" v-loading="false" element-loading-text="加载失败">加载失败</div>
-      </template>
-    </el-image>
-    <!-- <img v-if="trueUrl" v-lazy="trueUrl" class="absolute top-0 left-0 w-[100%] h-[100%] object-contain" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad"> -->
+    <img v-if="trueUrl" v-lazy="trueUrl" class="absolute top-0 left-0 w-[100%] h-[100%] object-contain" loading="lazy" alt="" @loadstart="onLoadStart" @error="onLoadError" @load="onLoad">
   </div>
 </template>
