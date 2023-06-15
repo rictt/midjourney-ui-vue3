@@ -22,9 +22,9 @@ const FORM_TYPE = {
 }
 const form = reactive({
   type: FORM_TYPE.LOGIN,
-  username: 'joeytest',
-  password: 'joeytest',
-  rePassword: 'joeytest',
+  username: '',
+  password: '',
+  rePassword: '',
   loading: false
 })
 
