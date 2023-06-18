@@ -6,9 +6,11 @@ export const useUser = () => {
 
   userStorage.addChangeListener((newUserValue) => {
     isLogin.value = !!newUserValue && !!tokenStorage.get()
+    userInfo.value = newUserValue;
   })
 
   const isLogin = ref(!!userStorage.get())
+  const userInfo = ref(userStorage.get())
 
   const userLogout = () => {
     userStorage.remove()
@@ -18,6 +20,7 @@ export const useUser = () => {
 
   return {
     isLogin,
+    userInfo,
     showLoginModal,
     userLogout
   }

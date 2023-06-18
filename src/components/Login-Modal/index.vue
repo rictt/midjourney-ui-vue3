@@ -88,19 +88,19 @@ const onClickCancel = () => {
 </script>
 
 <template>
-  <div class="max-w-[600px] px-8 py-4 min-w-[420px]" todayUsed="form.loading">
+  <div class="max-w-[600px] px-8 py-4 min-w-[420px] max-sm:min-w-[auto]" todayUsed="form.loading">
     <img class="block m-auto pb-4" src="/src/assets/coffee.png" alt="">
     <p class="py-1 pb-4 text-center text-orange-100 font-bold">欢迎使用</p>
     <div class="flex justify-between items-center py-2 text-sm mb-2" >
-      <div class="pr-2 text-sm min-w-[80px]">账号：</div>
+      <div class="pr-2 text-sm min-w-[80px] max-sm:min-w-[auto]">账号：</div>
       <input v-model.trim="form.username" type="text" class="flex-1 outline-none rounded text-gray-500 px-3 py-1.5">
     </div>
     <div class="flex justify-between items-center py-2 text-sm">
-      <div class="pr-2 text-sm min-w-[80px]">密码：</div>
+      <div class="pr-2 text-sm min-w-[80px] max-sm:min-w-[auto]">密码：</div>
       <input autocomplete="off" v-model.trim="form.password" type="password" style="-webkit-text-security: disc;" class="flex-1 outline-none rounded text-gray-500 px-3 py-1.5">
     </div>
-    <div class="flex justify-between items-center py-2 text-sm mt-2" v-if="form.type === FORM_TYPE.REGISTER">
-      <div class="pr-2 text-sm min-w-[80px]">输入密码：</div>
+    <div class="flex justify-between items-center py-2 text-sm mt-2 whitespace-nowrap" v-if="form.type === FORM_TYPE.REGISTER">
+      <div class="pr-2 text-sm min-w-[80px] max-sm:min-w-[auto]">输入密码：</div>
       <input autocomplete="off" v-model.trim="form.rePassword" type="password" class="flex-1 outline-none rounded text-gray-500 px-3 py-1.5">
     </div>
 

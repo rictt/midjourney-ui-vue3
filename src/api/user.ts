@@ -1,4 +1,5 @@
 import { $http } from '../utils/axios'
+import { userStorage } from '@/utils/storage';
 
 interface IUser {
   username: string;
@@ -12,4 +13,8 @@ export const registerUserAPI = (data: IUser) => {
 
 export const loginUserAPI = (data: IUser) => {
   return $http.post('/user/login', data)
+}
+
+export const getUserInfo = () => {
+  return $http.post('/user/' + userStorage.get().id)
 }

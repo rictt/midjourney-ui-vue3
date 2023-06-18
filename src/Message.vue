@@ -6,8 +6,9 @@ import Image from './components/Image.vue';
 import { useDebounceFn } from '@vueuse/core'
 import { onMounted, ref, computed } from 'vue'
 import Toast from './components/Toast';
+import { useUser } from '@/hooks/use-user'
 
-const itemWidth = ref(0)
+const { isLogin, userInfo } = useUser()
 const imageRef = ref<any>()
 const props = defineProps({
   message: {
@@ -71,7 +72,10 @@ const getMessageStatus = (status: number) => {
       <Image v-if="message.uri" ref="imageRef" loadText="排队生成中" :url="message.uri" />
 
       <!-- upscale area 升级区域 -->
-      <div v-if="message?.status == MessageStatus.DONE && !message.index">
+      <div v-if="!isLogin && message?.status == MessageStatus.DONE && !message.index">
+        <p class=" text-gray-400 text-sm leading-6">请登录进行Upscale升级</p>
+      </div>
+      <div v-else-if="isLogin && userInfo.username === message?.creator && message?.status == MessageStatus.DONE && !message.index">
         <Tag text="U1" @click="onClickUV(1)" />
         <Tag text="U2" @click="onClickUV(2)" />
         <Tag text="U3" @click="onClickUV(3)" />

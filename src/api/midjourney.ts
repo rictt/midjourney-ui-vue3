@@ -4,6 +4,7 @@ interface IUpscaleAPI {
   msgHash: string
   msgId: string
   index: number
+  flags?: number
 }
 
 export const getMessagesAPI = (params?: any) => {

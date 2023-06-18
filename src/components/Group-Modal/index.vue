@@ -12,7 +12,7 @@ const onClickCancel = () => {
 </script>
 
 <template> 
-  <div class="">
-    <img src="/src/assets/group.jpg" alt="">
+  <div class="max-w-[400px]">
+    <img class="w-full" src="/src/assets/group.jpg" alt="">
   </div>
 </template>

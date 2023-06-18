@@ -14,6 +14,7 @@ import { useLimitHook } from '@/hooks/use-limit-hook';
 import { userStorage } from '@/utils/storage';
 import { useUser } from '@/hooks/use-user'
 import GroupModal from '@/components/Group-Modal/index.vue'
+import UserModal from '@/components/User-Modal/index.vue'
 
 
 const { isLogin, showLoginModal, userLogout } = useUser()
@@ -140,7 +141,8 @@ const onUpscale = async (msg: Message) => {
     prompt,
     index,
     msgHash,
-    msgId
+    msgId,
+    flags: msg.flags || 0
   }) as any;
   console.log("newId: ", newId);
   const newMsg: Message = {
@@ -208,6 +210,13 @@ const showGroupModal = () => {
   })
 }
 
+const showUserModal = () => {
+  showModal(UserModal, {
+    closeOnClickModal: true,
+    closeOnPressEscape: true
+  })
+}
+
 onMounted(() => {
   getList({ pageNum: 1, pageSize: data.pageSize }).finally(() => {
     data.initLoading = false
@@ -239,18 +248,23 @@ onMounted(() => {
         class="absolute left-10 right-10 max-sm:left-2 max-sm:right-2 bottom-4 max-sm:bottom-2 flex-row items-center justify-between px-2 py-2 bg-gray-100 border-gray-400 rounded-[4px]">
         <!-- 快捷/帮助区域 -->
         <div class="flex w-full px-2 pb-2 pt-1 text-md select-none flex-wrap">
-          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="helpThink">想一个</p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="showSettingsModal">设置</p>
-          <!-- <p class="underline text-orange-400 pr-4 cursor-pointer" @click.stop="showSettingsModal">设置风格</p> -->
-          <p class="underline text-orange-400 cursor-pointer max-sm:text-sm" @click.stop="showUseModal">使用说明</p>
-          <p class="underline text-orange-400 pr-4 ml-4 max-sm:text-sm" @click.stop="onlyForMe">
-            <input id="onlyMe" v-model="data.onlyCurrentUser" type="checkbox" class="cursor-pointer">
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm max-sm:pr-1" @click.stop="helpThink">想一个
+          </p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm max-sm:pr-1"
+            @click.stop="showSettingsModal">设置</p>
+          <p class="underline text-orange-400 cursor-pointer max-sm:text-sm max-sm:pr-1" @click.stop="showUseModal">使用说明
+          </p>
+          <p class="underline text-orange-400 pr-4 ml-4 max-sm:text-sm max-sm:pr-1 max-sm:ml-1" @click.stop="onlyForMe">
+            <input id="onlyMe" v-model="data.onlyCurrentUser" type="checkbox" class="cursor-pointer max-sm:pl-1">
             <label for="onlyMe" class="cursor-pointer">只看自己</label>
           </p>
           <p class="flex-1"></p>
-          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click="showGroupModal">交流群</p>
-          <p v-if="!isLogin" class="underline text-orange-400 pr-4 cursor-pointer font-bold max-sm:text-sm" @click.stop="showLoginModal">登录/注册</p>
-          <p v-if="isLogin" class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm" @click.stop="userLogout">退出</p>
+          <p class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm max-sm:pr-1" @click="showGroupModal">交流群
+          </p>
+          <p v-if="!isLogin" class="underline text-orange-400 pr-4 cursor-pointer font-bold max-sm:text-sm max-sm:pr-1"
+            @click.stop="showLoginModal">我的</p>
+          <p v-if="isLogin" class="underline text-orange-400 pr-4 cursor-pointer max-sm:text-sm max-sm:pr-1"
+            @click.stop="showUserModal">我的</p>
         </div>
         <!-- 输入框 -->
         <div class="w-full bg-white flex items-center">
@@ -264,3 +278,7 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>#contentWrap .el-loading-mask {
+  background-color: transparent;
+}</style>

@@ -4,6 +4,7 @@ import { tokenStorage, userStorage } from '@/utils/storage'
 import { showLoginModal } from '@/utils/index';
 
 export const host = import.meta.env.VITE_APP_API_URL;
+// export const host = "http://43.153.50.34:8999";
 
 export const $http = axios.create({
   baseURL: host

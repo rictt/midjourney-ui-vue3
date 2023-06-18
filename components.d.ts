@@ -7,10 +7,10 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    copy: typeof import('./src/components/Login-Modal copy/index.vue')['default']
     ElImage: typeof import('element-plus/es')['ElImage']
     GroupModal: typeof import('./src/components/Group-Modal/index.vue')['default']
     Image: typeof import('./src/components/Image.vue')['default']
-    'Image copy': typeof import('./src/components/Image copy.vue')['default']
     Loading: typeof import('./src/components/Loading/index.vue')['default']
     LoginModal: typeof import('./src/components/Login-Modal/index.vue')['default']
     Modal: typeof import('./src/components/Modal/index.vue')['default']
@@ -18,6 +18,7 @@ declare module 'vue' {
     Tag: typeof import('./src/components/Tag.vue')['default']
     Toast: typeof import('./src/components/Toast/index.vue')['default']
     UseModal: typeof import('./src/components/Use-Modal/index.vue')['default']
+    UserModal: typeof import('./src/components/User-Modal/index.vue')['default']
   }
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

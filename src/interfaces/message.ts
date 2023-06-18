@@ -10,6 +10,8 @@ export interface Message {
   createTime?: string | number
   // 生成描述，比如我是upscale第四张
   generateText?: string
+  creator?: string
+  flags?: number
 }
 
 export enum MessageStatus {
