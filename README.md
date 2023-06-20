@@ -2,6 +2,17 @@
 
 基于[midjourney-client](https://github.com/erictik/midjourney-client)的api开发的可交互绘画界面，需要自行实现后端代理部分
 
+## 在线体验/反馈
+- [体验地址：http://mj-imagine.cn/](http://mj-imagine.cn/)
+- [其他交流，反馈问题](#页面截图)
+
+## 技术栈
+- 渲染/构建框架：vue3 + vite + typescript
+- ui库：element-plus
+- 样式处理：tailwind
+- 请求库：axios
+- 其他：crypto-js、clipboard、socket.io
+
 ## 已完成功能
 - [x] 列表展示
 - [x] 只看我的
@@ -20,5 +31,7 @@
 
    ![](./screen-2.png)
 
-   <img src="./screen-3.png" style="margin: 10px auto; display: block; max-width: 60%;" />
-   <img src="./screen-4.jpeg" style="margin: 0 auto; display: block; max-width: 50%;" />
+   <img src="./screen-3.png" width="375" />
+
+## 反馈/交流
+   <img src="./screen-4.jpeg" width="220" />
