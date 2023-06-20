@@ -239,7 +239,7 @@ onMounted(() => {
     <div
       class="relative h-full max-w-[980px] bg-gray-700 m-auto text-white px-10 py-4 sm:py-0 max-sm:py-2 max-sm:px-4 rounded-none">
       <div v-loading="data.initLoading" id="contentWrap" ref="contentWrap"
-        class="h-[calc(100%-150px)]  overflow-auto m-auto flex flex-col-reverse">
+        class="h-[calc(100%-150px)] max-sm:h-[calc(100%-120px)]  overflow-auto m-auto flex flex-col-reverse">
         <div class="border-b-2 border-purple-400" v-for="(item, index) in data.messages" :key="item.id">
           <MessageItem :key="item.id" :message="item" @on-upscale="onUpscale" />
         </div>
