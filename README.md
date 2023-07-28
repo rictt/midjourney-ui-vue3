@@ -1,6 +1,6 @@
 # Midjourney Client Web
 
-基于[midjourney-client](https://github.com/erictik/midjourney-client)的api开发的可交互绘画界面，需要自行实现后端代理部分
+基于[midjourney-client](https://github.com/erictik/midjourney-client)的api开发的可交互绘画界面，后端nestjs的实现[在这里](https://github.com/rictt/midjourney-api-nest)
 
 ## 在线体验/反馈
 - [体验地址：http://mj-imagine.cn/](http://mj-imagine.cn/)
@@ -32,6 +32,3 @@
    ![](./screen-2.png)
 
    <img src="./screen-3.png" width="375" />
-
-## 反馈/交流
-   <img src="./screen-4.jpeg" width="220" />
